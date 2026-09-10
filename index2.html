@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AegisAI — Aero Piston Engine Digital Twin</title>
+
+<style>
+:root{
+  --bg:#07111f;
+  --panel:#0d1b2d;
+  --panel2:#10243b;
+  --border:#1d3956;
+  --text:#e8f1fa;
+  --muted:#8fa7bd;
+  --cyan:#36d9ff;
+  --green:#39e58c;
+  --yellow:#ffd166;
+  --red:#ff5c70;
+  --purple:#a78bfa;
+  --shadow:0 12px 35px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:linear-gradient(135deg,#06101c,#091827 55%,#07111f);
+  color:var(--text);
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+}
+
+button,input,select{font:inherit}
+
+.app{
+  display:flex;
+  min-height:100vh;
+}
+
+.sidebar{
+  width:245px;
+  position:fixed;
+  top:0;
+  bottom:0;
+  background:#071321;
+  border-right:1px solid var(--border);
+  padding:22px 14px;
+  z-index:20;
+}
+
+.logo{
+  padding:5px 12px 24px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:15px;
+}
+
+.logo h1{
+  margin:0;
+  font-size:24px;
+  letter-spacing:2px;
+}
+
+.logo span{
+  color:var(--cyan);
+}
+
+.logo small{
+  display:block;
+  color:var(--muted);
+  margin-top:5px;
+  font-size:10px;
+  letter-spacing:1.5px;
+}
+
+.engine-mini{
+  background:linear-gradient(135deg,#102840,#0b1c2e);
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:13px;
+  margin-bottom:17px;
+}
+
+.engine-mini strong{
+  display:block;
+  font-size:13px;
+}
+
+.engine-mini small{
+  color:var(--muted);
+}
+
+.status-dot{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 10px var(--green);
+  margin-right:7px;
+}
+
+nav button{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#9db1c5;
+  padding:12px 13px;
+  border-radius:9px;
+  text-align:left;
+  cursor:pointer;
+  margin:2px 0;
+}
+
+nav button:hover,
+nav button.active{
+  background:#102940;
+  color:white;
+}
+
+.main{
+  margin-left:245px;
+  width:calc(100% - 245px);
+  min-height:100vh;
+}
+
+.topbar{
+  height:72px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 28px;
+  background:rgba(7,17,31,.82);
+  backdrop-filter:blur(10px);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.topbar h2{
+  margin:0;
+  font-size:20px;
+}
+
+.top-right{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.connection{
+  border:1px solid var(--border);
+  background:#0c1c2d;
+  border-radius:20px;
+  padding:8px 13px;
+  font-size:12px;
+}
+
+.content{
+  padding:25px;
+}
+
+.page{display:none}
+.page.active{display:block}
+
+.grid{
+  display:grid;
+  gap:16px;
+}
+
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+
+.card{
+  background:linear-gradient(145deg,rgba(14,30,48,.96),rgba(9,23,38,.96));
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+
+.card-title{
+  color:#b9cce0;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:13px;
+}
+
+.value{
+  font-size:29px;
+  font-weight:700;
+}
+
+.unit{
+  font-size:12px;
+  color:var(--muted);
+  margin-left:3px;
+}
+
+.muted{color:var(--muted)}
+
+.health-card{
+  display:flex;
+  align-items:center;
+  gap:22px;
+}
+
+.health-ring{
+  width:112px;
+  height:112px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:conic-gradient(var(--green) 0deg,#17324a 0deg);
+  position:relative;
+}
+
+.health-ring:after{
+  content:"";
+  position:absolute;
+  inset:9px;
+  background:#0c1c2d;
+  border-radius:50%;
+}
+
+.health-ring b{
+  position:relative;
+  z-index:2;
+  font-size:26px;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:7px;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.7px;
+}
+
+.good{background:rgba(57,229,140,.12);color:var(--green)}
+.warn{background:rgba(255,209,102,.12);color:var(--yellow)}
+.danger{background:rgba(255,92,112,.12);color:var(--red)}
+.info{background:rgba(54,217,255,.12);color:var(--cyan)}
+.purple{background:rgba(167,139,250,.12);color:var(--purple)}
+
+.metric-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+}
+
+.metric{
+  background:#0a1929;
+  border:1px solid #18344e;
+  border-radius:12px;
+  padding:14px;
+}
+
+.metric-name{
+  color:#809ab0;
+  font-size:11px;
+  margin-bottom:8px;
+}
+
+.metric-value{
+  font-size:21px;
+  font-weight:700;
+}
+
+.metric-status{
+  margin-top:8px;
+  font-size:10px;
+}
+
+canvas{
+  width:100%;
+  height:250px;
+  background:#091827;
+  border-radius:10px;
+}
+
+.twin{
+  height:360px;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(54,217,255,.12),transparent 28%),
+    linear-gradient(135deg,#071521,#0a1d30);
+  border:1px solid #18364f;
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+}
+
+.engine-svg{
+  width:100%;
+  height:100%;
+}
+
+.engine-part{
+  fill:#1a3a54;
+  stroke:#36d9ff;
+  stroke-width:2;
+}
+
+.engine-hot{
+  fill:#4b3323;
+  stroke:#ffd166;
+}
+
+.engine-moving{
+  animation:spin 2s linear infinite;
+  transform-origin:center;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+.twin-label{
+  position:absolute;
+  padding:5px 8px;
+  background:#091827dd;
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-size:10px;
+  color:#b9cce0;
+}
+
+.alert{
+  padding:12px;
+  border-radius:10px;
+  background:#0b1b2a;
+  border-left:3px solid var(--yellow);
+  margin-bottom:8px;
+}
+
+.alert.critical{border-left-color:var(--red)}
+.alert.info-alert{border-left-color:var(--cyan)}
+
+.progress{
+  height:8px;
+  border-radius:20px;
+  background:#10283d;
+  overflow:hidden;
+  margin-top:8px;
+}
+
+.progress i{
+  display:block;
+  height:100%;
+  border-radius:20px;
+  background:var(--cyan);
+}
+
+.health-row{
+  margin:14px 0;
+}
+
+.health-row-head{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+}
+
+.phase{
+  display:flex;
+  align-items:center;
+  gap:0;
+  margin:20px 0;
+}
+
+.phase-item{
+  flex:1;
+  text-align:center;
+  position:relative;
+}
+
+.phase-item:not(:last-child):after{
+  content:"";
+  position:absolute;
+  top:14px;
+  left:50%;
+  width:100%;
+  height:2px;
+  background:#1b344c;
+  z-index:0;
+}
+
+.phase-dot{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:#12283c;
+  border:2px solid #27435b;
+  display:inline-grid;
+  place-items:center;
+  position:relative;
+  z-index:2;
+  font-size:10px;
+}
+
+.phase-item.active .phase-dot{
+  background:var(--cyan);
+  color:#00131d;
+  border-color:var(--cyan);
+}
+
+.phase-item.done .phase-dot{
+  background:var(--green);
+  color:#001c0d;
+  border-color:var(--green);
+}
+
+.phase-item span{
+  display:block;
+  font-size:10px;
+  color:var(--muted);
+  margin-top:7px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  padding:11px;
+  text-align:left;
+  border-bottom:1px solid #183047;
+  font-size:12px;
+}
+
+th{color:#7f98ad}
+
+button.action{
+  background:#12304a;
+  color:white;
+  border:1px solid #24506d;
+  padding:9px 13px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+button.action:hover{background:#17415f}
+
+input,select{
+  width:100%;
+  background:#081827;
+  color:white;
+  border:1px solid #21405a;
+  border-radius:8px;
+  padding:10px;
+  outline:none;
+}
+
+label{
+  display:block;
+  color:#91a7bb;
+  font-size:11px;
+  margin-bottom:6px;
+}
+
+.form-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  margin-bottom:15px;
+}
+
+.big-number{
+  font-size:42px;
+  font-weight:800;
+}
+
+.risk-matrix{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.risk-cell{
+  padding:18px 10px;
+  border-radius:8px;
+  text-align:center;
+  background:#11283b;
+  font-size:11px;
+}
+
+.replay{
+  width:100%;
+  accent-color:var(--cyan);
+}
+
+.log{
+  max-height:350px;
+  overflow:auto;
+}
+
+.log-item{
+  padding:9px 0;
+  border-bottom:1px solid #173047;
+  font-size:11px;
+}
+
+.log-time{color:var(--cyan)}
+
+.footer-note{
+  text-align:center;
+  color:#60798e;
+  font-size:10px;
+  padding:25px;
+}
+
+@media(max-width:1100px){
+  .metric-grid{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:800px){
+  .sidebar{
+    width:65px;
+    padding:10px 6px;
+  }
+  .logo h1{font-size:15px}
+  .logo small,.engine-mini,nav button span{display:none}
+  .main{
+    margin-left:65px;
+    width:calc(100% - 65px);
+  }
+  .content{padding:13px}
+  .metric-grid,.g3,.g2,.g4{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<aside class="sidebar">
+
+  <div class="logo">
+    <h1>AEGIS<span>AI</span></h1>
+    <small>AERO ENGINE INTELLIGENCE</small>
+  </div>
+
+  <div class="engine-mini">
+    <strong><span class="status-dot"></span><span id="sideEngine">AEGIS-APX-01</span></strong>
+    <small id="sideSource">Simulation Mode</small>
+  </div>
+
+  <nav>
+    <button class="active" onclick="showPage('dashboard',this)">◈ <span>Dashboard</span></button>
+    <button onclick="showPage('live',this)">◉ <span>Live Data</span></button>
+    <button onclick="showPage('twin',this)">⬡ <span>Digital Twin</span></button>
+    <button onclick="showPage('ai',this)">✦ <span>AI Analysis</span></button>
+    <button onclick="showPage('risk',this)">⚠ <span>Health & Risk</span></button>
+    <button onclick="showPage('mission',this)">➤ <span>Mission Profile</span></button>
+    <button onclick="showPage('replay',this)">◀ <span>Mission Replay</span></button>
+    <button onclick="showPage('reports',this)">▤ <span>Reports</span></button>
+    <button onclick="showPage('settings',this)">⚙ <span>Settings</span></button>
+  </nav>
+
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+  <h2 id="pageTitle">Engine Health Dashboard</h2>
+
+  <div class="top-right">
+    <div class="connection">
+      <span class="status-dot"></span>
+      <span id="connectionText">SIMULATOR ONLINE</span>
+    </div>
+    <span class="muted" id="clock">--:--:--</span>
+  </div>
+</header>
+
+<div class="content">
+
+<!-- =====================================================
+     DASHBOARD
+===================================================== -->
+
+<section id="dashboard" class="page active">
+
+<div class="grid g4">
+
+<div class="card health-card">
+  <div class="health-ring" id="healthRing">
+    <b id="healthValue">92%</b>
+  </div>
+  <div>
+    <div class="card-title">Engine Health</div>
+    <h2 id="healthState">NORMAL</h2>
+    <span class="badge good" id="healthBadge">HEALTHY</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Engine State</div>
+  <div class="value" id="engineState">RUNNING</div>
+  <span class="badge good">NOMINAL</span>
+</div>
+
+<div class="card">
+  <div class="card-title">Mission Phase</div>
+  <div class="value" id="missionPhase">CRUISE</div>
+  <span class="badge info">AUTO DETECTED</span>
+</div>
+
+<div class="card">
+  <div class="card-title">Mission Reliability</div>
+  <div class="value"><span id="reliability">96</span><span class="unit">%</span></div>
+  <span class="badge good">HIGH</span>
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+<div class="card-title">Real-Time Engine Telemetry</div>
+
+<div class="metric-grid">
+
+<div class="metric">
+<div class="metric-name">ENGINE SPEED</div>
+<div class="metric-value"><span id="rpm">3850</span><span class="unit">RPM</span></div>
+<div class="metric-status good">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">CYLINDER HEAD TEMP</div>
+<div class="metric-value"><span id="temp">74</span><span class="unit">°C</span></div>
+<div class="metric-status good" id="tempStatus">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">OIL PRESSURE</div>
+<div class="metric-value"><span id="oilPressure">4.2</span><span class="unit">bar</span></div>
+<div class="metric-status good">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">OIL TEMPERATURE</div>
+<div class="metric-value"><span id="oilTemp">84</span><span class="unit">°C</span></div>
+<div class="metric-status good">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">VIBRATION</div>
+<div class="metric-value"><span id="vibration">2.1</span><span class="unit">mm/s</span></div>
+<div class="metric-status good">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">FUEL FLOW</div>
+<div class="metric-value"><span id="fuelFlow">28.6</span><span class="unit">L/h</span></div>
+<div class="metric-status good">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">EXHAUST TEMP</div>
+<div class="metric-value"><span id="egt">612</span><span class="unit">°C</span></div>
+<div class="metric-status good">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">MANIFOLD PRESSURE</div>
+<div class="metric-value"><span id="manifold">32</span><span class="unit">kPa</span></div>
+<div class="metric-status good">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">ELECTRICAL BUS</div>
+<div class="metric-value"><span id="voltage">24.1</span><span class="unit">V</span></div>
+<div class="metric-status good">● NOMINAL</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">THROTTLE</div>
+<div class="metric-value"><span id="throttle">62</span><span class="unit">%</span></div>
+<div class="metric-status info">● CONTROL</div>
+</div>
+
+</div>
+</div>
+
+<br>
+
+<div class="grid g2">
+
+<div class="card">
+<div class="card-title">Engine Health Trend</div>
+<canvas id="healthChart"></canvas>
+</div>
+
+<div class="card">
+<div class="card-title">Live Parameter Trend</div>
+<canvas id="paramChart"></canvas>
+</div>
+
+</div>
+
+<br>
+
+<div class="grid g2">
+
+<div class="card">
+<div class="card-title">Digital Twin — Live Engine Model</div>
+
+<div class="twin">
+
+<svg class="engine-svg" viewBox="0 0 700 350">
+
+<rect x="145" y="105" width="410" height="145" rx="30" class="engine-part"/>
+
+<circle cx="350" cy="178" r="70" class="engine-part"/>
+
+<g class="engine-moving">
+<circle cx="350" cy="178" r="48"
+fill="none"
+stroke="#36d9ff"
+stroke-width="8"
+stroke-dasharray="15 12"/>
+</g>
+
+<rect x="170" y="125" width="70" height="105" rx="10" class="engine-hot"/>
+<rect x="460" y="125" width="70" height="105" rx="10" class="engine-hot"/>
+
+<line x1="100" y1="178" x2="145" y2="178"
+stroke="#36d9ff" stroke-width="9"/>
+
+<line x1="555" y1="178" x2="600" y2="178"
+stroke="#36d9ff" stroke-width="9"/>
+
+<circle cx="120" cy="178" r="15" fill="#36d9ff"/>
+<circle cx="580" cy="178" r="15" fill="#36d9ff"/>
+
+<text x="315" y="183" fill="#fff" font-size="16">PISTON</text>
+
+</svg>
+
+<div class="twin-label" style="left:8%;top:38%">INTAKE</div>
+<div class="twin-label" style="right:7%;top:38%">EXHAUST</div>
+<div class="twin-label" style="left:43%;top:8%">CYLINDER</div>
+<div class="twin-label" style="left:42%;bottom:8%">CRANKSHAFT</div>
+
+</div>
+
+</div>
+
+<div class="card">
+<div class="card-title">Active Intelligence</div>
+
+<div class="alert info-alert">
+<strong>Thermal Trend</strong><br>
+<span class="muted">Temperature remains inside the current operating envelope.</span>
+</div>
+
+<div class="alert">
+<strong>Predictive Maintenance</strong><br>
+<span class="muted">No immediate maintenance intervention predicted.</span>
+</div>
+
+<div class="alert info-alert">
+<strong>Digital Twin Sync</strong><br>
+<span class="muted">Model synchronized with telemetry.</span>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     LIVE DATA
+===================================================== -->
+
+<section id="live" class="page">
+
+<div class="grid g3">
+
+<div class="card">
+<div class="card-title">Telemetry Source</div>
+<div class="big-number" id="liveSource">SIM</div>
+<span class="badge good" id="liveConnection">CONNECTED</span>
+</div>
+
+<div class="card">
+<div class="card-title">Telemetry Rate</div>
+<div class="big-number"><span id="rate">0</span></div>
+<span class="muted">samples/min</span>
+</div>
+
+<div class="card">
+<div class="card-title">Data Quality</div>
+<div class="big-number"><span id="dataQuality">99</span>%</div>
+<span class="badge good">GOOD</span>
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<div class="card-title">Live Telemetry Stream</div>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Expected</th>
+<th>Deviation</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="telemetryTable"></tbody>
+</table>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<div class="card-title">System Event Log</div>
+
+<div class="log" id="eventLog"></div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     DIGITAL TWIN
+===================================================== -->
+
+<section id="twin" class="page">
+
+<div class="grid g2">
+
+<div class="card">
+
+<div class="card-title">Digital Twin Engine Model</div>
+
+<div class="twin">
+
+<svg class="engine-svg" viewBox="0 0 700 350">
+
+<rect x="130" y="100" width="440" height="155" rx="30" class="engine-part"/>
+
+<circle cx="350" cy="178" r="72" class="engine-part"/>
+
+<g class="engine-moving">
+<circle cx="350" cy="178" r="51"
+fill="none"
+stroke="#36d9ff"
+stroke-width="9"
+stroke-dasharray="18 10"/>
+</g>
+
+<rect x="150" y="120" width="80" height="115" rx="10" class="engine-hot"/>
+<rect x="470" y="120" width="80" height="115" rx="10" class="engine-hot"/>
+
+<line x1="75" y1="178" x2="130" y2="178"
+stroke="#36d9ff" stroke-width="10"/>
+
+<line x1="570" y1="178" x2="625" y2="178"
+stroke="#36d9ff" stroke-width="10"/>
+
+</svg>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">Model Synchronization</div>
+
+<div class="health-row">
+<div class="health-row-head">
+<span>RPM Model</span><b id="resRpm">0.0%</b>
+</div>
+<div class="progress"><i id="barRpm" style="width:15%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head">
+<span>Thermal Model</span><b id="resTemp">0.0%</b>
+</div>
+<div class="progress"><i id="barTemp" style="width:20%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head">
+<span>Lubrication Model</span><b id="resOil">0.0%</b>
+</div>
+<div class="progress"><i id="barOil" style="width:10%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head">
+<span>Vibration Model</span><b id="resVib">0.0%</b>
+</div>
+<div class="progress"><i id="barVib" style="width:12%"></i></div>
+</div>
+
+<br>
+
+<span class="badge good">DIGITAL TWIN SYNCHRONIZED</span>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<div class="card-title">Twin vs Physical Engine</div>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Physical</th>
+<th>Twin Model</th>
+<th>Residual</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody id="twinTable"></tbody>
+</table>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<div class="card-title">What-If Simulation</div>
+
+<p class="muted">
+Test how the digital twin responds to a simulated operating change.
+This does not control a real engine.
+</p>
+
+<button class="action" onclick="simulateWhatIf()">Simulate Thermal Load Increase</button>
+<button class="action" onclick="resetWhatIf()">Reset Model</button>
+
+<p id="whatIfResult" class="muted"></p>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     AI ANALYSIS
+===================================================== -->
+
+<section id="ai" class="page">
+
+<div class="grid g4">
+
+<div class="card">
+<div class="card-title">Anomaly Score</div>
+<div class="big-number" id="anomalyScore">8</div>
+<span class="badge good" id="anomalyBadge">LOW</span>
+</div>
+
+<div class="card">
+<div class="card-title">Model Confidence</div>
+<div class="big-number" id="aiConfidence">87%</div>
+<span class="badge info">PROTOTYPE MODEL</span>
+</div>
+
+<div class="card">
+<div class="card-title">Predicted State</div>
+<div class="big-number" id="predictedState">STABLE</div>
+<span class="badge good">NORMAL</span>
+</div>
+
+<div class="card">
+<div class="card-title">Maintenance Priority</div>
+<div class="big-number" id="maintenancePriority">LOW</div>
+<span class="badge good">MONITOR</span>
+</div>
+
+</div>
+
+<br>
+
+<div class="grid g2">
+
+<div class="card">
+
+<div class="card-title">AI Contributing Factors</div>
+
+<div class="health-row">
+<div class="health-row-head">
+<span>Temperature</span><b id="factorTemp">12%</b>
+</div>
+<div class="progress"><i id="factorTempBar" style="width:12%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head">
+<span>Vibration</span><b id="factorVib">8%</b>
+</div>
+<div class="progress"><i id="factorVibBar" style="width:8%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head">
+<span>Oil Pressure</span><b id="factorOil">5%</b>
+</div>
+<div class="progress"><i id="factorOilBar" style="width:5%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head">
+<span>EGT</span><b id="factorEgt">10%</b>
+</div>
+<div class="progress"><i id="factorEgtBar" style="width:10%"></i></div>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">Explainable AI Assessment</div>
+
+<div class="alert info-alert">
+<strong>Current Interpretation</strong>
+<p id="aiExplanation" class="muted">
+Engine parameters are within the configured prototype operating envelope.
+No major anomaly detected.
+</p>
+</div>
+
+<div class="alert">
+<strong>Recommended Action</strong>
+<p class="muted">
+Continue monitoring telemetry and compare trends against engine-specific validated limits.
+</p>
+</div>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<div class="card-title">Anomaly History</div>
+<canvas id="anomalyChart"></canvas>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     RISK
+===================================================== -->
+
+<section id="risk" class="page">
+
+<div class="grid g3">
+
+<div class="card">
+<div class="card-title">Overall Risk</div>
+<div class="big-number" id="riskLevel">LOW</div>
+<span class="badge good">MONITORED</span>
+</div>
+
+<div class="card">
+<div class="card-title">Thermal Risk</div>
+<div class="big-number" id="thermalRisk">LOW</div>
+</div>
+
+<div class="card">
+<div class="card-title">Mechanical Risk</div>
+<div class="big-number" id="mechanicalRisk">LOW</div>
+</div>
+
+</div>
+
+<br>
+
+<div class="grid g2">
+
+<div class="card">
+
+<div class="card-title">Subsystem Health</div>
+
+<div class="health-row">
+<div class="health-row-head"><span>Combustion</span><b>94%</b></div>
+<div class="progress"><i style="width:94%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head"><span>Lubrication</span><b>97%</b></div>
+<div class="progress"><i style="width:97%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head"><span>Mechanical</span><b>92%</b></div>
+<div class="progress"><i style="width:92%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head"><span>Thermal</span><b>91%</b></div>
+<div class="progress"><i style="width:91%"></i></div>
+</div>
+
+<div class="health-row">
+<div class="health-row-head"><span>Electrical</span><b>98%</b></div>
+<div class="progress"><i style="width:98%"></i></div>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">Risk Matrix</div>
+
+<div class="risk-matrix">
+
+<div class="risk-cell">VERY LOW<br>0–10</div>
+<div class="risk-cell">LOW<br>10–30</div>
+<div class="risk-cell">MEDIUM<br>30–60</div>
+<div class="risk-cell">HIGH<br>60–80</div>
+
+<div class="risk-cell">NORMAL</div>
+<div class="risk-cell">MONITOR</div>
+<div class="risk-cell">INSPECT</div>
+<div class="risk-cell">ACTION</div>
+
+</div>
+
+<br>
+
+<p class="muted">
+Risk is calculated from the current prototype thresholds and should be replaced by validated engine-specific risk models.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     MISSION
+===================================================== -->
+
+<section id="mission" class="page">
+
+<div class="card">
+
+<div class="card-title">Mission Profile</div>
+
+<div class="phase">
+
+<div class="phase-item done">
+<div class="phase-dot">1</div>
+<span>TAKEOFF</span>
+</div>
+
+<div class="phase-item done">
+<div class="phase-dot">2</div>
+<span>CLIMB</span>
+</div>
+
+<div class="phase-item active">
+<div class="phase-dot">3</div>
+<span>CRUISE</span>
+</div>
+
+<div class="phase-item">
+<div class="phase-dot">4</div>
+<span>LOITER</span>
+</div>
+
+<div class="phase-item">
+<div class="phase-dot">5</div>
+<span>RETURN</span>
+</div>
+
+<div class="phase-item">
+<div class="phase-dot">6</div>
+<span>LANDING</span>
+</div>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="grid g4">
+
+<div class="card">
+<div class="card-title">Mission Elapsed</div>
+<div class="big-number" id="missionTime">32:18</div>
+</div>
+
+<div class="card">
+<div class="card-title">Fuel Remaining</div>
+<div class="big-number">68%</div>
+</div>
+
+<div class="card">
+<div class="card-title">Predicted Endurance</div>
+<div class="big-number">2.8h</div>
+</div>
+
+<div class="card">
+<div class="card-title">Mission Reliability</div>
+<div class="big-number"><span id="missionReliability">96</span>%</div>
+</div>
+
+</div>
+
+<br>
+
+<div class="grid g2">
+
+<div class="card">
+<div class="card-title">Mission Performance</div>
+<canvas id="missionChart"></canvas>
+</div>
+
+<div class="card">
+<div class="card-title">Mission Intelligence</div>
+
+<div class="alert info-alert">
+<strong>Operating Envelope</strong>
+<p class="muted">Current operation is inside the configured prototype envelope.</p>
+</div>
+
+<div class="alert">
+<strong>Fuel Efficiency</strong>
+<p class="muted">Current fuel-flow trend is stable.</p>
+</div>
+
+<div class="alert info-alert">
+<strong>Mission Prediction</strong>
+<p class="muted">No major reliability degradation detected in current simulation.</p>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     REPLAY
+===================================================== -->
+
+<section id="replay" class="page">
+
+<div class="card">
+
+<div class="card-title">Mission Replay</div>
+
+<div style="font-size:35px;font-weight:700" id="replayTime">00:00</div>
+
+<br>
+
+<input
+type="range"
+class="replay"
+id="replaySlider"
+min="0"
+max="100"
+value="55"
+oninput="updateReplay(this.value)"
+>
+
+<br><br>
+
+<div class="grid g4">
+
+<div class="metric">
+<div class="metric-name">RPM</div>
+<div class="metric-value" id="replayRPM">3850</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">TEMP</div>
+<div class="metric-value" id="replayTemp">74 °C</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">HEALTH</div>
+<div class="metric-value" id="replayHealth">92%</div>
+</div>
+
+<div class="metric">
+<div class="metric-name">PHASE</div>
+<div class="metric-value" id="replayPhase">CRUISE</div>
+</div>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+<div class="card-title">Replay Timeline</div>
+<canvas id="replayChart"></canvas>
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     REPORTS
+===================================================== -->
+
+<section id="reports" class="page">
+
+<div class="grid g3">
+
+<div class="card">
+<div class="card-title">Mission Health Report</div>
+<p class="muted">
+Generate a browser-readable engine health report.
+</p>
+<button class="action" onclick="generateReport()">Generate Report</button>
+</div>
+
+<div class="card">
+<div class="card-title">Telemetry Dataset</div>
+<p class="muted">
+Export the current telemetry history as CSV.
+</p>
+<button class="action" onclick="downloadCSV()">Export CSV</button>
+</div>
+
+<div class="card">
+<div class="card-title">System Status</div>
+<p class="muted">
+Current dashboard state can be captured for demonstration.
+</p>
+<button class="action" onclick="alert('Dashboard snapshot prepared.')">Create Snapshot</button>
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<div class="card-title">Report Preview</div>
+
+<table>
+<tr><th>Engine</th><td id="reportEngine">AEGIS-APX-01</td></tr>
+<tr><th>Health</th><td id="reportHealth">92%</td></tr>
+<tr><th>Risk</th><td id="reportRisk">LOW</td></tr>
+<tr><th>Mission Phase</th><td id="reportPhase">CRUISE</td></tr>
+<tr><th>Telemetry Source</th><td id="reportSource">Simulation</td></tr>
+<tr><th>AI Status</th><td>Prototype Decision Support</td></tr>
+</table>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     SETTINGS
+===================================================== -->
+
+<section id="settings" class="page">
+
+<div class="card">
+
+<div class="card-title">Engine Configuration</div>
+<div class="form-row">
+<div><label>Engine Profile</label><select id="engineProfile" onchange="applyEngineProfile(this.value)"><option value="indigenous_turbodiesel">Indigenous Turbodiesel</option><option value="foreign_hf">Foreign-Sourced Heavy-Fuel</option></select></div>
+<div><label>Engine Type</label><input id="engineType" value="Indigenous Turbodiesel Piston" readonly></div>
+</div>
+
+<div class="form-row">
+
+<div>
+<label>Engine ID</label>
+<input id="engineName" value="AEGIS-APX-01">
+</div>
+
+<div>
+<label>Engine Model</label>
+<input id="engineModel" value="Aero Piston Prototype">
+</div>
+
+</div>
+
+<div class="form-row">
+
+<div>
+<label>Cylinders</label>
+<input id="cylinders" value="4">
+</div>
+
+<div>
+<label>Rated RPM</label>
+<input id="ratedRPM" value="4200">
+</div>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<div class="card-title">Telemetry Connection</div>
+
+<div class="form-row">
+
+<div>
+<label>Data Source</label>
+
+<select id="dataSource">
+<option value="simulation">Simulation</option>
+<option value="api">REST API</option>
+</select>
+
+</div>
+
+<div>
+<label>Refresh Interval</label>
+<select id="refreshInterval">
+<option value="1000">1 second</option>
+<option value="1500" selected>1.5 seconds</option>
+<option value="2000">2 seconds</option>
+<option value="5000">5 seconds</option>
+</select>
+</div>
+
+</div>
+
+<div>
+<label>Backend API URL</label>
+<input id="apiUrl" value="/api/health/">
+</div>
+
+<br>
+
+<button class="action" onclick="saveSettings()">Save & Apply</button>
+<button class="action" onclick="testBackend()">Test Backend</button>
+
+<p id="backendMessage" class="muted"></p>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<div class="card-title">Telemetry JSON Contract</div>
+
+<pre style="color:#9ddcff;overflow:auto;background:#071521;padding:15px;border-radius:8px">
+{
+  "rpm": 3850,
+  "temp": 74,
+  "oilPressure": 4.2,
+  "oilTemp": 84,
+  "vibration": 2.1,
+  "fuelFlow": 28.6,
+  "egt": 612,
+  "manifoldPressure": 32,
+  "voltage": 24.1,
+  "throttle": 62
+}
+</pre>
+
+</div>
+
+</section>
+
+<div class="footer-note">
+AEGISAI • AI-Enabled Aero Piston Engine Digital Twin • Prototype Decision-Support Interface
+</div>
+
+</div>
+</main>
+</div>
+
+
+<script>
+/* =========================================================
+   AEGISAI ENGINE DASHBOARD
+   ========================================================= */
+
+/*
+BACKEND CONNECTION
+------------------
+AegisAI FastAPI endpoint:
+GET /api/health/
+
+Response:
+{
+  success: true,
+  sensors: {...},
+  health: {...},
+  anomaly: {
+    is_anomaly, anomaly_score, confidence,
+    severity, message
+  }
+}
+*/
+
+let API_URL="/api/health/";
+let useAPI=false;
+let refreshTimer=null;
+let backendOnline=false;
+let backendHealth=null;
+let backendAnomaly=null;
+let lastBackendError="";
+
+let telemetry={
+  rpm:3850,temp:74,oilPressure:4.2,oilTemp:84,vibration:2.1,
+  fuelFlow:28.6,egt:612,manifoldPressure:32,voltage:24.1,throttle:62
+};
+
+const ENGINE_PROFILES={
+ foreign_hf:{engineId:"FOREIGN-HF-01",type:"Foreign-Sourced Heavy-Fuel Piston",ratedRPM:4200,expected:{rpm:3800,temp:72,oilPressure:4,oilTemp:82,vibration:2,fuelFlow:28,egt:600,manifoldPressure:32,voltage:24,throttle:62},limits:{rpm:[3000,4200],temp:[50,95],oilPressure:[3,5.5],oilTemp:[60,110],vibration:[0,4],fuelFlow:[18,40],egt:[450,680],manifoldPressure:[20,40],voltage:[20,28],throttle:[0,100]}},
+ indigenous_turbodiesel:{engineId:"IND-TD-01",type:"Indigenous Turbodiesel Piston",ratedRPM:4200,expected:{rpm:3600,temp:78,oilPressure:4.1,oilTemp:88,vibration:2,fuelFlow:24,egt:610,manifoldPressure:38,voltage:24,throttle:62},limits:{rpm:[2800,4200],temp:[50,100],oilPressure:[3,5.5],oilTemp:[60,115],vibration:[0,4],fuelFlow:[15,38],egt:[450,700],manifoldPressure:[20,50],voltage:[20,28],throttle:[0,100]}}
+};
+let activeProfileId="indigenous_turbodiesel";
+let expected={...ENGINE_PROFILES[activeProfileId].expected};
+let limits={...ENGINE_PROFILES[activeProfileId].limits};
+
+let history=[], anomalyHistory=[], eventHistory=[], whatIf=false;
+
+const titles={
+ dashboard:"Engine Health Dashboard",live:"Live Telemetry",twin:"Digital Twin",
+ ai:"AI Analysis",risk:"Health & Risk",mission:"Mission Profile",
+ replay:"Mission Replay",reports:"Reports & Analytics",settings:"System Settings"
+};
+
+/* =========================================================
+   NORMALIZE API DATA
+========================================================= */
+
+function pick(obj,keys,fallback){
+  for(const key of keys){
+    if(obj && obj[key]!==undefined && obj[key]!==null && obj[key]!==""){
+      const n=Number(obj[key]);
+      if(Number.isFinite(n)) return n;
+    }
+  }
+  return fallback;
+}
+
+function normalizeTelemetry(payload){
+  const d=(payload && payload.sensors) ? payload.sensors : (payload || {});
+  return {
+    rpm:pick(d,["rpm","RPM","engineRPM"],telemetry.rpm),
+    temp:pick(d,["temp","temperature","cylinderHeadTemperature","cht"],telemetry.temp),
+    oilPressure:pick(d,["oilPressure","oil_pressure"],telemetry.oilPressure),
+    oilTemp:pick(d,["oilTemp","oilTemperature","oil_temperature"],telemetry.oilTemp),
+    vibration:pick(d,["vibration","vibrationLevel"],telemetry.vibration),
+    fuelFlow:pick(d,["fuelFlow","fuel_flow"],telemetry.fuelFlow),
+    egt:pick(d,["egt","exhaustTemperature","exhaust_temperature"],telemetry.egt),
+    manifoldPressure:pick(d,["manifoldPressure","manifold_pressure","map"],telemetry.manifoldPressure),
+    voltage:pick(d,["voltage","busVoltage","bus_voltage"],telemetry.voltage),
+    throttle:pick(d,["throttle","throttlePosition","throttle_position"],telemetry.throttle)
+  };
+}
+
+function setConnectionUI(mainText,sourceText){
+  setText("connectionText",mainText);
+  setText("sideSource",sourceText);
+  setText("liveSource",useAPI?(backendOnline?"API":"FALLBACK"):"SIM");
+  setText("liveConnection",backendOnline||!useAPI?"CONNECTED":"FALLBACK");
+  const el=document.getElementById("liveConnection");
+  if(el) el.className="badge "+(backendOnline||!useAPI?"good":"warn");
+}
+
+/* =========================================================
+   BACKEND FETCH
+========================================================= */
+
+async function fetchTelemetry(){
+  if(!useAPI){
+    backendOnline=false;
+    setConnectionUI("SIMULATOR ONLINE","Simulation Mode");
+    return simulate();
+  }
+
+  try{
+    const response=await fetch(API_URL,{
+      method:"GET",
+      headers:{"Accept":"application/json"},
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("HTTP "+response.status);
+
+    const payload=await response.json();
+    if(payload.success===false) throw new Error("Backend returned success=false");
+
+    backendHealth=payload.health ?? null;
+    backendAnomaly=payload.anomaly ?? null;
+    if(payload.engine_profile){
+      setText("sideEngine",payload.engine_profile.engine_id || "ENGINE");
+      const t=document.getElementById("engineType"); if(t)t.value=payload.engine_profile.engine_type || t.value;
+    }
+    telemetry=normalizeTelemetry(payload);
+    backendOnline=true;
+    lastBackendError="";
+    setConnectionUI("BACKEND ONLINE","REST API");
+    return telemetry;
+
+  }catch(error){
+    backendOnline=false;
+    lastBackendError=error.message||"Unknown API error";
+    setConnectionUI("API ERROR → SIMULATION","Fallback Simulation");
+    addEvent("Backend unavailable — simulation fallback active ("+lastBackendError+")");
+    return simulate();
+  }
+}
+
+/* =========================================================
+   HEALTH ENGINE
+========================================================= */
+
+function deviation(value,key){
+
+  const range=limits[key];
+
+  if(value<range[0]){
+    return (range[0]-value)/(range[1]-range[0]);
+  }
+
+  if(value>range[1]){
+    return (value-range[1])/(range[1]-range[0]);
+  }
+
+  const center=(range[0]+range[1])/2;
+  const half=(range[1]-range[0])/2;
+
+  return Math.abs(value-center)/half*.18;
+}
+
+function calculateHealth(d){
+
+  let penalty=0;
+
+  Object.keys(limits).forEach(key=>{
+    penalty+=deviation(d[key],key)*8;
+  });
+
+  let health=100-penalty;
+
+  health=Math.max(0,Math.min(100,health));
+
+  return health;
+}
+
+function riskFromHealth(h){
+
+  if(h<50)return "CRITICAL";
+  if(h<70)return "HIGH";
+  if(h<85)return "MEDIUM";
+  return "LOW";
+}
+
+
+/* =========================================================
+   MISSION PHASE
+========================================================= */
+
+function getMissionPhase(d){
+
+  const t=d.throttle;
+
+  if(t<25)return "LOITER";
+  if(t<40)return "CRUISE";
+  if(t<65)return "CLIMB";
+  if(t<80)return "TAKEOFF";
+
+  return "TAKEOFF";
+}
+
+
+function extractBackendHealth(h,d){
+  if(typeof h==="number") return Math.max(0,Math.min(100,h));
+  if(typeof h==="string" && Number.isFinite(Number(h))) return Math.max(0,Math.min(100,Number(h)));
+  const candidates=[h?.health,h?.score,h?.health_score,h?.healthScore,h?.index,h?.health_index,h?.healthIndex];
+  for(const v of candidates){
+    if(Number.isFinite(Number(v))){
+      const n=Number(v);
+      return Math.max(0,Math.min(100,n<=1?n*100:n));
+    }
+  }
+  return calculateHealth(d);
+}
+
+function severityToRisk(severity){
+  const s=String(severity||"").toUpperCase();
+  if(s==="CRITICAL") return "CRITICAL";
+  if(s==="WARNING") return "HIGH";
+  if(s==="OBSERVATION") return "MEDIUM";
+  return "LOW";
+}
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function render(d){
+
+  telemetry=d;
+
+  const health=backendHealth ? extractBackendHealth(backendHealth,d) : calculateHealth(d);
+  const risk=backendAnomaly && backendAnomaly.severity
+    ? severityToRisk(backendAnomaly.severity)
+    : riskFromHealth(health);
+
+  const phase=getMissionPhase(d);
+
+  document.getElementById("healthValue").textContent=Math.round(health)+"%";
+
+  document.getElementById("healthRing").style.background=
+    `conic-gradient(var(--green) ${health*3.6}deg,#17324a 0deg)`;
+
+  document.getElementById("healthState").textContent=
+    health>=85?"NORMAL":
+    health>=70?"DEGRADED":
+    health>=50?"WARNING":"CRITICAL";
+
+  const badge=document.getElementById("healthBadge");
+
+  badge.className="badge "+(
+    health>=85?"good":
+    health>=70?"warn":"danger"
+  );
+
+  badge.textContent=risk;
+
+  setText("rpm",Math.round(d.rpm));
+  setText("temp",d.temp.toFixed(1));
+  setText("oilPressure",d.oilPressure.toFixed(2));
+  setText("oilTemp",d.oilTemp.toFixed(1));
+  setText("vibration",d.vibration.toFixed(2));
+  setText("fuelFlow",d.fuelFlow.toFixed(1));
+  setText("egt",Math.round(d.egt));
+  setText("manifold",d.manifoldPressure.toFixed(1));
+  setText("voltage",d.voltage.toFixed(1));
+  setText("throttle",Math.round(d.throttle));
+
+  setText("missionPhase",phase);
+
+  setText(
+    "reliability",
+    Math.round(Math.max(60,health+4))
+  );
+
+  setText(
+    "missionReliability",
+    Math.round(Math.max(60,health+4))
+  );
+
+  updateAI(d,health,risk);
+  updateRisk(d,health,risk);
+  updateTwin(d);
+  updateLiveTable(d);
+  updateReports(d,health,risk,phase);
+
+  history.push({
+    time:Date.now(),
+    ...d,
+    health
+  });
+
+  if(history.length>120){
+    history.shift();
+  }
+
+  anomalyHistory.push({
+    time:Date.now(),
+    score:calculateAnomaly(d)
+  });
+
+  if(anomalyHistory.length>120){
+    anomalyHistory.shift();
+  }
+
+  drawAllCharts();
+}
+
+
+/* =========================================================
+   AI PROTOTYPE
+========================================================= */
+
+function calculateAnomaly(d){
+
+  let score=0;
+
+  Object.keys(limits).forEach(k=>{
+    const range=limits[k];
+
+    if(d[k]<range[0]){
+      score+=Math.min(30,((range[0]-d[k])/(range[1]-range[0]))*100);
+    }
+
+    if(d[k]>range[1]){
+      score+=Math.min(30,((d[k]-range[1])/(range[1]-range[0]))*100);
+    }
+  });
+
+  return Math.min(100,Math.round(score));
+}
+
+function updateAI(d,health,risk){
+
+  const localScore=calculateAnomaly(d);
+  const score=backendAnomaly && Number.isFinite(Number(backendAnomaly.anomaly_score))
+    ? Math.round(Number(backendAnomaly.anomaly_score)*100)
+    : localScore;
+  const confidence=backendAnomaly && Number.isFinite(Number(backendAnomaly.confidence))
+    ? Number(backendAnomaly.confidence)
+    : Math.round(82+Math.random()*10);
+
+  setText("anomalyScore",score);
+  setText("aiConfidence",Math.round(confidence)+"%");
+
+  const badge=document.getElementById("anomalyBadge");
+
+  if(score<20){
+    badge.className="badge good";
+    badge.textContent="LOW";
+  }
+  else if(score<50){
+    badge.className="badge warn";
+    badge.textContent="MEDIUM";
+  }
+  else{
+    badge.className="badge danger";
+    badge.textContent="HIGH";
+  }
+
+  setText(
+    "predictedState",
+    backendAnomaly && backendAnomaly.severity
+      ? String(backendAnomaly.severity).toUpperCase()
+      : (score<20?"STABLE":score<50?"WATCH":"ANOMALY")
+  );
+
+  setText(
+    "maintenancePriority",
+    score<20?"LOW":
+    score<50?"MEDIUM":"HIGH"
+  );
+
+  setText("aiExplanation",
+    backendAnomaly && backendAnomaly.message
+      ? backendAnomaly.message
+      : "Engine parameters are being evaluated against the configured prototype operating envelope."
+  );
+
+  let tempFactor=Math.round(Math.max(2,Math.abs(d.temp-expected.temp)*2));
+  let vibFactor=Math.round(Math.max(2,Math.abs(d.vibration-expected.vibration)*15));
+  let oilFactor=Math.round(Math.max(2,Math.abs(d.oilPressure-expected.oilPressure)*8));
+  let egtFactor=Math.round(Math.max(2,Math.abs(d.egt-expected.egt)*.8));
+
+  setText("factorTemp",tempFactor+"%");
+  setText("factorVib",vibFactor+"%");
+  setText("factorOil",oilFactor+"%");
+  setText("factorEgt",egtFactor+"%");
+
+  setWidth("factorTempBar",tempFactor);
+  setWidth("factorVibBar",vibFactor);
+  setWidth("factorOilBar",oilFactor);
+  setWidth("factorEgtBar",egtFactor);
+
+  let explanation;
+
+  if(score<20){
+    explanation=
+      "Engine parameters are currently within the configured prototype operating envelope. No significant anomaly is detected.";
+  }else if(score<50){
+    explanation=
+      "Small deviations from the reference operating condition are present. Continue monitoring the trend.";
+  }else{
+    explanation=
+      "Multiple parameters are deviating from the configured envelope. Further inspection and validated engine-specific analysis are recommended.";
+  }
+
+  document.getElementById("aiExplanation").textContent=explanation;
+}
+
+
+/* =========================================================
+   RISK
+========================================================= */
+
+function updateRisk(d,health,risk){
+
+  setText("riskLevel",risk);
+
+  const thermal=
+    d.temp>90 || d.egt>670 ? "HIGH":
+    d.temp>82 || d.egt>630 ? "MEDIUM":"LOW";
+
+  const mechanical=
+    d.vibration>3.5 || d.oilPressure<3.2 ? "HIGH":
+    d.vibration>2.8 || d.oilPressure<3.6 ? "MEDIUM":"LOW";
+
+  setText("thermalRisk",thermal);
+  setText("mechanicalRisk",mechanical);
+}
+
+
+/* =========================================================
+   DIGITAL TWIN
+========================================================= */
+
+function updateTwin(d){
+
+  const twinRPM=expected.rpm;
+  const twinTemp=expected.temp;
+  const twinOil=expected.oilPressure;
+  const twinVib=expected.vibration;
+
+  const rRPM=Math.abs(d.rpm-twinRPM)/twinRPM*100;
+  const rTemp=Math.abs(d.temp-twinTemp)/twinTemp*100;
+  const rOil=Math.abs(d.oilPressure-twinOil)/twinOil*100;
+  const rVib=Math.abs(d.vibration-twinVib)/twinVib*100;
+
+  setText("resRpm",rRPM.toFixed(1)+"%");
+  setText("resTemp",rTemp.toFixed(1)+"%");
+  setText("resOil",rOil.toFixed(1)+"%");
+  setText("resVib",rVib.toFixed(1)+"%");
+
+  setWidth("barRpm",Math.min(100,rRPM*5));
+  setWidth("barTemp",Math.min(100,rTemp*5));
+  setWidth("barOil",Math.min(100,rOil*5));
+  setWidth("barVib",Math.min(100,rVib*5));
+
+  document.getElementById("twinTable").innerHTML=`
+
+  <tr>
+    <td>RPM</td>
+    <td>${d.rpm.toFixed(0)}</td>
+    <td>${twinRPM}</td>
+    <td>${rRPM.toFixed(2)}%</td>
+    <td><span class="badge good">SYNC</span></td>
+  </tr>
+
+  <tr>
+    <td>CHT</td>
+    <td>${d.temp.toFixed(1)} °C</td>
+    <td>${twinTemp} °C</td>
+    <td>${rTemp.toFixed(2)}%</td>
+    <td><span class="badge good">SYNC</span></td>
+  </tr>
+
+  <tr>
+    <td>Oil Pressure</td>
+    <td>${d.oilPressure.toFixed(2)} bar</td>
+    <td>${twinOil.toFixed(2)} bar</td>
+    <td>${rOil.toFixed(2)}%</td>
+    <td><span class="badge good">SYNC</span></td>
+  </tr>
+
+  <tr>
+    <td>Vibration</td>
+    <td>${d.vibration.toFixed(2)} mm/s</td>
+    <td>${twinVib.toFixed(2)} mm/s</td>
+    <td>${rVib.toFixed(2)}%</td>
+    <td><span class="badge good">SYNC</span></td>
+  </tr>
+
+  `;
+}
+
+
+/* =========================================================
+   LIVE TABLE
+========================================================= */
+
+function updateLiveTable(d){
+
+  const names={
+    rpm:["RPM","RPM"],
+    temp:["Cylinder Head Temperature","°C"],
+    oilPressure:["Oil Pressure","bar"],
+    oilTemp:["Oil Temperature","°C"],
+    vibration:["Vibration","mm/s"],
+    fuelFlow:["Fuel Flow","L/h"],
+    egt:["Exhaust Gas Temperature","°C"],
+    manifoldPressure:["Manifold Pressure","kPa"],
+    voltage:["Electrical Bus","V"],
+    throttle:["Throttle","%"]
+  };
+
+  let html="";
+
+  Object.keys(names).forEach(key=>{
+
+    const dev=deviation(d[key],key);
+    const percentage=Math.round(dev*100);
+
+    const status=percentage<15?"NOMINAL":
+                 percentage<35?"WATCH":"ALERT";
+
+    const cls=status==="NOMINAL"?"good":
+               status==="WATCH"?"warn":"danger";
+
+    html+=`
+    <tr>
+      <td>${names[key][0]}</td>
+      <td>${Number(d[key]).toFixed(key==="rpm"||key==="egt"||key==="throttle"?0:2)} ${names[key][1]}</td>
+      <td>${expected[key]}</td>
+      <td>${percentage}%</td>
+      <td><span class="badge ${cls}">${status}</span></td>
+    </tr>
+    `;
+  });
+
+  document.getElementById("telemetryTable").innerHTML=html;
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+function addEvent(message){
+
+  const now=new Date();
+
+  eventHistory.unshift({
+    time:now.toLocaleTimeString(),
+    message
+  });
+
+  if(eventHistory.length>30){
+    eventHistory.pop();
+  }
+
+  renderEvents();
+}
+
+function renderEvents(){
+
+  const box=document.getElementById("eventLog");
+
+  if(!box)return;
+
+  box.innerHTML=eventHistory.map(e=>`
+    <div class="log-item">
+      <span class="log-time">${e.time}</span>
+      &nbsp; ${e.message}
+    </div>
+  `).join("");
+}
+
+
+/* =========================================================
+   CHARTS
+========================================================= */
+
+function setupCanvas(canvas){
+
+  const rect=canvas.getBoundingClientRect();
+
+  const ratio=window.devicePixelRatio||1;
+
+  canvas.width=rect.width*ratio;
+  canvas.height=rect.height*ratio;
+
+  const ctx=canvas.getContext("2d");
+
+  ctx.scale(ratio,ratio);
+
+  return {
+    ctx,
+    w:rect.width,
+    h:rect.height
+  };
+}
+
+function drawLine(id,data,key,opts={}){
+
+  const canvas=document.getElementById(id);
+
+  if(!canvas)return;
+
+  const {ctx,w,h}=setupCanvas(canvas);
+
+  ctx.clearRect(0,0,w,h);
+
+  ctx.strokeStyle="#19334a";
+  ctx.lineWidth=1;
+
+  for(let i=0;i<5;i++){
+
+    const y=20+i*(h-40)/4;
+
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(w,y);
+    ctx.stroke();
+  }
+
+  if(data.length<2)return;
+
+  let values=data.map(x=>Number(x[key]));
+
+  let min=Math.min(...values);
+  let max=Math.max(...values);
+
+  if(max===min)max=min+1;
+
+  ctx.strokeStyle=opts.stroke||"#36d9ff";
+  ctx.lineWidth=2;
+
+  ctx.beginPath();
+
+  values.forEach((v,i)=>{
+
+    const x=i/(values.length-1)*w;
+
+    const y=h-20-
+      ((v-min)/(max-min))*(h-40);
+
+    if(i===0)ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  });
+
+  ctx.stroke();
+}
+
+function drawAllCharts(){
+
+  drawLine(
+    "healthChart",
+    history,
+    "health",
+    {stroke:"#39e58c"}
+  );
+
+  drawLine(
+    "paramChart",
+    history,
+    "rpm",
+    {stroke:"#36d9ff"}
+  );
+
+  drawLine(
+    "anomalyChart",
+    anomalyHistory,
+    "score",
+    {stroke:"#ff5c70"}
+  );
+
+  drawLine(
+    "missionChart",
+    history,
+    "fuelFlow",
+    {stroke:"#a78bfa"}
+  );
+
+  drawLine(
+    "replayChart",
+    history,
+    "temp",
+    {stroke:"#ffd166"}
+  );
+}
+
+function resizeCanvases(){
+  drawAllCharts();
+}
+
+
+/* =========================================================
+   REPLAY
+========================================================= */
+
+function updateReplay(value){
+
+  if(history.length===0)return;
+
+  const index=Math.floor(
+    Number(value)/100*(history.length-1)
+  );
+
+  const d=history[index];
+
+  if(!d)return;
+
+  const seconds=Math.round(
+    Number(value)/100*3600
+  );
+
+  const mm=String(Math.floor(seconds/60)).padStart(2,"0");
+  const ss=String(seconds%60).padStart(2,"0");
+
+  setText("replayTime",mm+":"+ss);
+  setText("replayRPM",Math.round(d.rpm));
+  setText("replayTemp",d.temp.toFixed(1)+" °C");
+  setText("replayHealth",Math.round(d.health)+"%");
+  setText("replayPhase",getMissionPhase(d));
+}
+
+
+/* =========================================================
+   WHAT IF
+========================================================= */
+
+function simulateWhatIf(){
+
+  whatIf=true;
+
+  document.getElementById("whatIfResult").textContent=
+    "What-if scenario active: simulated thermal load increased. Watch the Digital Twin residuals and AI anomaly score.";
+
+  addEvent("What-if thermal load simulation started");
+}
+
+function resetWhatIf(){
+
+  whatIf=false;
+
+  document.getElementById("whatIfResult").textContent=
+    "Digital Twin returned to baseline simulation.";
+
+  addEvent("What-if simulation reset");
+}
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+async function saveSettings(){
+
+  applyEngineProfile(document.getElementById("engineProfile").value,true);
+  API_URL=document.getElementById("apiUrl").value.trim() || "/api/health/";
+  useAPI=document.getElementById("dataSource").value==="api";
+  try{
+    localStorage.setItem("aegis_api_url",API_URL);
+    localStorage.setItem("aegis_data_source",useAPI?"api":"simulation");
+    localStorage.setItem("aegis_refresh",document.getElementById("refreshInterval").value);
+  }catch(e){}
+
+  const name=
+    document.getElementById("engineName").value.trim() ||
+    "AEGIS-APX-01";
+
+  document.getElementById("sideEngine").textContent=name;
+
+  document.getElementById("sideSource").textContent=
+    useAPI?"REST API":"Simulation Mode";
+
+  restartTimer();
+
+  document.getElementById("backendMessage").textContent=
+    useAPI
+      ?"REST API mode enabled."
+      :"Simulation mode enabled.";
+
+  addEvent(
+    useAPI
+      ?"REST API connection mode selected"
+      :"Simulation mode selected"
+  )
+  await syncEngineProfileToBackend();
+}
+
+async function testBackend(){
+
+  const url=document.getElementById("apiUrl").value.trim();
+
+  const message=document.getElementById("backendMessage");
+
+  message.textContent="Testing backend...";
+
+  try{
+
+    const response=await fetch(url);
+
+    if(!response.ok){
+      throw new Error("HTTP "+response.status);
+    }
+
+    const data=await response.json();
+
+    message.textContent=data && data.sensors && data.anomaly
+      ? "Backend connected successfully. Sensors + health + anomaly data received."
+      : "Backend responded, but expected /api/health/ structure was not detected.";
+
+    console.log("AEGISAI backend response:",data);
+
+  }catch(error){
+
+    message.textContent=
+      "Backend test failed: "+error.message;
+  }
+}
+
+function restartTimer(){
+
+  if(refreshTimer){
+    clearInterval(refreshTimer);
+  }
+
+  const interval=
+    Number(document.getElementById("refreshInterval").value);
+
+  refreshTimer=setInterval(tick,interval);
+}
+
+
+
+/* =========================================================
+   ENGINE PROFILES
+   ========================================================= */
+function applyEngineProfile(profileId,silent=false){
+  const p=ENGINE_PROFILES[profileId]; if(!p)return;
+  activeProfileId=profileId; expected={...p.expected}; limits={...p.limits};
+  const type=document.getElementById("engineType"); if(type)type.value=p.type;
+  const model=document.getElementById("engineModel"); if(model)model.value=p.type;
+  const rated=document.getElementById("ratedRPM"); if(rated)rated.value=p.ratedRPM;
+  const name=document.getElementById("engineName");
+  if(name && (!name.value || name.value==="AEGIS-APX-01" || name.value.startsWith("FOREIGN-") || name.value.startsWith("IND-"))) name.value=p.engineId;
+  setText("sideEngine",name?name.value:p.engineId);
+  if(!silent)addEvent("Engine profile selected: "+p.type);
+}
+async function syncEngineProfileToBackend(){
+ if(!useAPI)return;
+ try{const r=await fetch("/api/engine-profiles/select/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({profile_id:activeProfileId})});if(!r.ok)throw new Error("HTTP "+r.status);}
+ catch(e){addEvent("Backend profile sync failed: "+(e.message||"unknown error"));}
+}
+
+/* =========================================================
+   PAGE NAVIGATION
+   ========================================================= */
+function showPage(pageId, button){
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  const page=document.getElementById(pageId);
+  if(page) page.classList.add("active");
+
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  if(button) button.classList.add("active");
+
+  setText("pageTitle", titles[pageId] || "AegisAI");
+
+  // Canvases inside a hidden page have zero size. Redraw after it becomes visible.
+  requestAnimationFrame(() => {
+    resizeCanvases();
+    if(pageId==="replay" && history.length) updateReplay(document.getElementById("replaySlider").value);
+  });
+}
+
+/* =========================================================
+   SIMULATION ENGINE
+   ========================================================= */
+function simulate(){
+  const t=Date.now()/1000;
+
+  // Smooth, bounded prototype telemetry variation.
+  const load=Math.sin(t/7);
+  const fast=Math.sin(t*1.7);
+
+  telemetry={
+    rpm:3850 + load*95 + fast*25,
+    temp:74 + load*2.2 + fast*.5,
+    oilPressure:4.2 + load*.08,
+    oilTemp:84 + load*1.8,
+    vibration:2.1 + Math.abs(fast)*.18,
+    fuelFlow:28.6 + load*.7,
+    egt:612 + load*12 + fast*3,
+    manifoldPressure:32 + load*.8,
+    voltage:24.1 + load*.12,
+    throttle:62 + load*4
+  };
+
+  if(whatIf){
+    telemetry.temp += 8;
+    telemetry.egt += 35;
+    telemetry.vibration += .35;
+  }
+
+  return telemetry;
+}
+
+/* =========================================================
+   MAIN TICK
+========================================================= */
+
+async function tick(){
+
+  const d=await fetchTelemetry();
+
+  render(d);
+
+  document.getElementById("rate").textContent=
+    Math.round(60000/
+      Number(document.getElementById("refreshInterval").value)
+    );
+
+  if(Math.random()<.08){
+
+    const score=calculateAnomaly(d);
+
+    if(score>30){
+      addEvent(
+        "Anomaly score increased to "+score
+      );
+    }
+  }
+}
+
+
+/* =========================================================
+   REPORTS
+========================================================= */
+
+function updateReports(d,health,risk,phase){
+
+  setText("reportEngine",
+    document.getElementById("engineName").value
+  );
+
+  setText("reportHealth",
+    Math.round(health)+"%"
+  );
+
+  setText("reportRisk",risk);
+  setText("reportPhase",phase);
+
+  setText(
+    "reportSource",
+    useAPI?"REST API":"Simulation"
+  );
+}
+
+function generateReport(){
+
+  const health=document.getElementById("healthValue").textContent;
+
+  const html=`
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>AEGISAI Engine Health Report</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#07111f;
+color:#e8f1fa;
+padding:40px;
+}
+
+.box{
+background:#10243b;
+padding:20px;
+margin:15px 0;
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>AEGISAI ENGINE HEALTH REPORT</h1>
+
+<div class="box">
+<strong>Engine:</strong>
+${document.getElementById("engineName").value}
+</div>
+
+<div class="box">
+<strong>Health:</strong>
+${health}
+</div>
+
+<div class="box">
+<strong>Risk:</strong>
+${document.getElementById("riskLevel").textContent}
+</div>
+
+<div class="box">
+<strong>Mission Phase:</strong>
+${document.getElementById("missionPhase").textContent}
+</div>
+
+<div class="box">
+
+<h2>Telemetry</h2>
+
+<p>RPM: ${telemetry.rpm.toFixed(0)}</p>
+<p>CHT: ${telemetry.temp.toFixed(1)} °C</p>
+<p>Oil Pressure: ${telemetry.oilPressure.toFixed(2)} bar</p>
+<p>Oil Temperature: ${telemetry.oilTemp.toFixed(1)} °C</p>
+<p>Vibration: ${telemetry.vibration.toFixed(2)} mm/s</p>
+<p>Fuel Flow: ${telemetry.fuelFlow.toFixed(1)} L/h</p>
+<p>EGT: ${telemetry.egt.toFixed(0)} °C</p>
+<p>Manifold Pressure: ${telemetry.manifoldPressure.toFixed(1)} kPa</p>
+<p>Voltage: ${telemetry.voltage.toFixed(1)} V</p>
+<p>Throttle: ${telemetry.throttle.toFixed(0)}%</p>
+
+</div>
+
+<div class="box">
+
+<strong>AI Status:</strong>
+
+Prototype decision-support analysis.
+
+<br><br>
+
+This report is not an aircraft certification document
+and requires validation using engine-specific data,
+sensor calibration and validated diagnostic models.
+
+</div>
+
+</body>
+
+</html>
+`;
+
+  const blob=new Blob([html],{
+    type:"text/html"
+  });
+
+  const url=URL.createObjectURL(blob);
+
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="AegisAI_Engine_Health_Report.html";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  addEvent("Engine health report generated");
+}
+
+
+/* =========================================================
+   CSV EXPORT
+========================================================= */
+
+function downloadCSV(){
+
+  if(history.length===0){
+    alert("No telemetry history available yet.");
+    return;
+  }
+
+  let csv=
+    "timestamp,rpm,temp,oilPressure,oilTemp,vibration,fuelFlow,egt,manifoldPressure,voltage,throttle,health\n";
+
+  history.forEach(d=>{
+
+    csv+=
+      new Date(d.time).toISOString()+","+
+      d.rpm.toFixed(2)+","+
+      d.temp.toFixed(2)+","+
+      d.oilPressure.toFixed(3)+","+
+      d.oilTemp.toFixed(2)+","+
+      d.vibration.toFixed(3)+","+
+      d.fuelFlow.toFixed(2)+","+
+      d.egt.toFixed(2)+","+
+      d.manifoldPressure.toFixed(2)+","+
+      d.voltage.toFixed(2)+","+
+      d.throttle.toFixed(2)+","+
+      d.health.toFixed(2)+"\n";
+  });
+
+  const blob=new Blob([csv],{
+    type:"text/csv"
+  });
+
+  const url=URL.createObjectURL(blob);
+
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="AegisAI_Telemetry.csv";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  addEvent("Telemetry CSV exported");
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function setText(id,value){
+
+  const el=document.getElementById(id);
+
+  if(el)el.textContent=value;
+}
+
+function setWidth(id,value){
+
+  const el=document.getElementById(id);
+
+  if(el){
+    el.style.width=
+      Math.max(0,Math.min(100,value))+"%";
+  }
+}
+
+
+/* =========================================================
+   CLOCK
+========================================================= */
+
+setInterval(()=>{
+
+  document.getElementById("clock").textContent=
+    new Date().toLocaleTimeString();
+
+},1000);
+
+
+/* =========================================================
+   LOAD SAVED CONNECTION SETTINGS
+========================================================= */
+
+(function loadSavedSettings(){
+  try{
+    const savedUrl=localStorage.getItem("aegis_api_url");
+    const savedSource=localStorage.getItem("aegis_data_source");
+    const savedRefresh=localStorage.getItem("aegis_refresh");
+    if(savedUrl) API_URL=savedUrl;
+    if(savedSource) useAPI=savedSource==="api";
+    if(savedRefresh){
+      const sel=document.getElementById("refreshInterval");
+      if([...sel.options].some(o=>o.value===savedRefresh)) sel.value=savedRefresh;
+    }
+    document.getElementById("apiUrl").value=API_URL;
+    document.getElementById("dataSource").value=useAPI?"api":"simulation";
+  }catch(e){}
+})();
+
+/* =========================================================
+   STARTUP
+========================================================= */
+
+window.addEventListener("resize",resizeCanvases);
+
+addEvent(
+  "AEGISAI Digital Twin initialized"
+);
+
+addEvent(
+  useAPI ? "REST API connection mode configured: "+API_URL
+         : "Simulation telemetry stream started"
+);
+
+restartTimer();
+
+tick();
+
+</script>
+
+</body>
+</html>
