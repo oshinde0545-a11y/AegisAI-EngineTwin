@@ -1,60 +1,36 @@
 {
-  "name": "prop-types",
-  "version": "15.8.1",
-  "description": "Runtime type checking for React props and similar objects.",
-  "sideEffects": false,
-  "main": "index.js",
-  "license": "MIT",
-  "files": [
-    "LICENSE",
-    "README.md",
-    "checkPropTypes.js",
-    "factory.js",
-    "factoryWithThrowingShims.js",
-    "factoryWithTypeCheckers.js",
-    "index.js",
-    "prop-types.js",
-    "prop-types.min.js",
-    "lib"
-  ],
-  "repository": "facebook/prop-types",
+  "name": "loose-envify",
+  "version": "1.4.0",
+  "description": "Fast (and loose) selective `process.env` replacer using js-tokens instead of an AST",
   "keywords": [
-    "react"
+    "environment",
+    "variables",
+    "browserify",
+    "browserify-transform",
+    "transform",
+    "source",
+    "configuration"
   ],
-  "bugs": {
-    "url": "https://github.com/facebook/prop-types/issues"
+  "homepage": "https://github.com/zertosh/loose-envify",
+  "license": "MIT",
+  "author": "Andres Suarez <zertosh@gmail.com>",
+  "main": "index.js",
+  "bin": {
+    "loose-envify": "cli.js"
   },
-  "homepage": "https://facebook.github.io/react/",
-  "dependencies": {
-    "loose-envify": "^1.4.0",
-    "object-assign": "^4.1.1",
-    "react-is": "^16.13.1"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/zertosh/loose-envify.git"
   },
   "scripts": {
-    "pretest": "npm run lint",
-    "lint": "eslint .",
-    "test": "npm run tests-only",
-    "tests-only": "jest",
-    "umd": "NODE_ENV=development browserify index.js -t loose-envify --standalone PropTypes -o prop-types.js",
-    "umd-min": "NODE_ENV=production browserify index.js -t loose-envify -t uglifyify --standalone PropTypes  -p bundle-collapser/plugin -o | uglifyjs --compress unused,dead_code -o prop-types.min.js",
-    "build": "yarn umd && yarn umd-min",
-    "prepublish": "not-in-publish || yarn build"
+    "test": "tap test/*.js"
+  },
+  "dependencies": {
+    "js-tokens": "^3.0.0 || ^4.0.0"
   },
   "devDependencies": {
-    "babel-jest": "^19.0.0",
-    "babel-preset-react": "^6.24.1",
-    "browserify": "^16.5.0",
-    "bundle-collapser": "^1.4.0",
-    "eslint": "^8.6.0",
-    "in-publish": "^2.0.1",
-    "jest": "^19.0.2",
-    "react": "^15.7.0",
-    "uglifyify": "^5.0.2",
-    "uglifyjs": "^2.4.11"
-  },
-  "browserify": {
-    "transform": [
-      "loose-envify"
-    ]
+    "browserify": "^13.1.1",
+    "envify": "^3.4.0",
+    "tap": "^8.0.0"
   }
 }
