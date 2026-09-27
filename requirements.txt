@@ -1,7 +1,9 @@
+ALTER USER 'root'@'localhost'
+IDENTIFIED BY 'NewPassword123!';
 fastapi
 uvicorn[standard]
 pydantic
+pydantic-settings
+influxdb-client
 numpy
-pandas
 scikit-learn
-python-multipart

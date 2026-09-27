@@ -14,10 +14,12 @@ router = APIRouter(
 @router.get("/")
 def engine_health():
 
-    data = simulator.generate()
+    data = simulator.get_latest()
+
+    if data is None:
+        data = simulator.generate()
 
     health = calculate_health(data)
-
     anomaly = calculate_anomaly(data)
 
     return {

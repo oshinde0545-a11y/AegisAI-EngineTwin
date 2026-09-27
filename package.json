@@ -1,36 +1,21 @@
 {
-  "name": "loose-envify",
-  "version": "1.4.0",
-  "description": "Fast (and loose) selective `process.env` replacer using js-tokens instead of an AST",
-  "keywords": [
-    "environment",
-    "variables",
-    "browserify",
-    "browserify-transform",
-    "transform",
-    "source",
-    "configuration"
-  ],
-  "homepage": "https://github.com/zertosh/loose-envify",
-  "license": "MIT",
-  "author": "Andres Suarez <zertosh@gmail.com>",
-  "main": "index.js",
-  "bin": {
-    "loose-envify": "cli.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/zertosh/loose-envify.git"
-  },
+  "name": "aegisai-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "test": "tap test/*.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "js-tokens": "^3.0.0 || ^4.0.0"
+    "lucide-react": "^0.468.0",
+    "recharts": "^2.15.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "browserify": "^13.1.1",
-    "envify": "^3.4.0",
-    "tap": "^8.0.0"
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.5"
   }
 }

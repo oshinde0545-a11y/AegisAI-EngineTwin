@@ -13,7 +13,10 @@ router = APIRouter(
 @router.get("/")
 def digital_twin():
 
-    data = simulator.generate()
+    data = simulator.get_latest()
+
+    if data is None:
+        data = simulator.generate()
 
     twin = build_digital_twin(data)
 

@@ -1,45 +1,51 @@
-# loose-envify
+# AegisAI Complete Frontend
 
-[![Build Status](https://travis-ci.org/zertosh/loose-envify.svg?branch=master)](https://travis-ci.org/zertosh/loose-envify)
+## Stack
+- React 18
+- Vite
+- Recharts
+- Lucide React
+- Plain CSS
 
-Fast (and loose) selective `process.env` replacer using [js-tokens](https://github.com/lydell/js-tokens) instead of an AST. Works just like [envify](https://github.com/hughsk/envify) but much faster.
+## Run in VS Code
 
-## Gotchas
+1. Extract this folder.
+2. Open the folder in VS Code.
+3. Open Terminal.
+4. Run:
 
-* Doesn't handle broken syntax.
-* Doesn't look inside embedded expressions in template strings.
-  - **this won't work:**
-  ```js
-  console.log(`the current env is ${process.env.NODE_ENV}`);
-  ```
-* Doesn't replace oddly-spaced or oddly-commented expressions.
-  - **this won't work:**
-  ```js
-  console.log(process./*won't*/env./*work*/NODE_ENV);
-  ```
+npm install
+npm run dev
 
-## Usage/Options
+5. Open the localhost URL printed by Vite.
 
-loose-envify has the exact same interface as [envify](https://github.com/hughsk/envify), including the CLI.
+## Current frontend features
 
-## Benchmark
+- Dashboard matching the AegisAI aerospace concept
+- Responsive sidebar/navigation
+- Engine Health Index
+- Engine status and risk
+- Live telemetry simulation
+- Digital Twin visualization
+- Expected vs live values
+- AI prediction/confidence
+- Explainable alert
+- Health trend charts
+- Mission profile
+- Mission replay slider
+- Reports page
+- Settings page
+- Controlled simulated fault demonstration
+- Mobile responsive layout
 
-```
-envify:
+## Backend connection
 
-  $ for i in {1..5}; do node bench/bench.js 'envify'; done
-  708ms
-  727ms
-  791ms
-  719ms
-  720ms
+The frontend currently generates demo telemetry locally so it can run immediately.
 
-loose-envify:
+Later, replace the telemetry simulation in `src/App.jsx` with REST/WebSocket calls to your FastAPI backend.
 
-  $ for i in {1..5}; do node bench/bench.js '../'; done
-  51ms
-  52ms
-  52ms
-  52ms
-  52ms
-```
+Recommended production flow:
+
+ESP32/DAQ → FastAPI → AI/ML → Digital Twin → WebSocket → React Dashboard
+
+Important: demo values and simulated fault behaviour are not real UAV/DRDO engine measurements.

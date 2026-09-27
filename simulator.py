@@ -1,13 +1,15 @@
 import random
 import math
+
 from .schemas import SensorData
+from database.influx_client import write_engine_telemetry
 
 
 class EngineSimulator:
-
     def __init__(self):
         self.time = 0
         self.fault_mode = False
+        self.latest_data = None
 
     def set_fault_mode(self, enabled: bool):
         self.fault_mode = enabled
@@ -24,14 +26,13 @@ class EngineSimulator:
         fuel_flow = 28.6 + random.uniform(-0.4, 0.4)
         exhaust_temperature = 612 + wave * 4 + random.uniform(-3, 3)
 
-        # Controlled abnormal condition for demonstration
         if self.fault_mode:
             temperature += 12
             oil_pressure -= 0.8
             vibration += 1.2
             exhaust_temperature += 45
 
-        return SensorData(
+        sensor_data = SensorData(
             rpm=round(rpm, 2),
             temperature=round(temperature, 2),
             oil_pressure=round(oil_pressure, 2),
@@ -39,6 +40,15 @@ class EngineSimulator:
             fuel_flow=round(fuel_flow, 2),
             exhaust_temperature=round(exhaust_temperature, 2),
         )
+
+        self.latest_data = sensor_data
+
+        write_engine_telemetry(sensor_data)
+
+        return sensor_data
+
+    def get_latest(self):
+        return self.latest_data
 
 
 simulator = EngineSimulator()
